@@ -2,59 +2,57 @@ let aspMonthly = [];
 let antibiogram = [];
 let charts = {};
 
-/*
-Expected Google Sheet tabs:
-1. Fact_ASP_Monthly
-2. Fact_Antibiogram
-
-Best deployment:
-Publish each tab as CSV, then paste the CSV URL into this tool.
-For MVP, the first URL should be Fact_ASP_Monthly.
-For antibiogram, define ANTIBIOGRAM_CSV_URL below.
-*/
-
-const DEFAULT_ASP_CSV_URL =
-"https://docs.google.com/spreadsheets/d/e/2PACX-1vQM8WMnPop68JT32GelxEr2Nf77TcQKXAZvATTlsj59kKxzQFIfkRzXB7UwgpE5pXYElaWIDkDyYHsZ/pub?gid=257837179&single=true&output=csv";
-const ANTIBIOGRAM_CSV_URL =
-"https://docs.google.com/spreadsheets/d/e/2PACX-1vQM8WMnPop68JT32GelxEr2Nf77TcQKXAZvATTlsj59kKxzQFIfkRzXB7UwgpE5pXYElaWIDkDyYHsZ/pub?gid=548638764&single=true&output=csv";
-
 document.addEventListener("DOMContentLoaded", () => {
-  const saved = localStorage.getItem("ASP_CSV_URL") || DEFAULT_ASP_CSV_URL;
-  document.getElementById("sheetUrl").value = saved;
-  if (saved) loadDashboard();
+  document.getElementById("aspCsvUrl").value =
+    localStorage.getItem("ASP_MONTHLY_CSV_URL") || "";
+  document.getElementById("antibiogramCsvUrl").value =
+    localStorage.getItem("ANTIBIOGRAM_CSV_URL") || "";
 });
 
-function saveSheetUrl() {
-  const url = document.getElementById("sheetUrl").value.trim();
-  localStorage.setItem("ASP_CSV_URL", url);
-  setStatus("CSV URL saved locally.");
+function saveUrls() {
+  localStorage.setItem(
+    "ASP_MONTHLY_CSV_URL",
+    document.getElementById("aspCsvUrl").value.trim()
+  );
+  localStorage.setItem(
+    "ANTIBIOGRAM_CSV_URL",
+    document.getElementById("antibiogramCsvUrl").value.trim()
+  );
+  setStatus("URLs saved locally.");
 }
 
 async function loadDashboard() {
-  const url = document.getElementById("sheetUrl").value.trim();
-  if (!url) {
-    setStatus("Please paste a Google Sheet published CSV URL.");
+  const aspUrl = document.getElementById("aspCsvUrl").value.trim();
+  const antibiogramUrl =
+    document.getElementById("antibiogramCsvUrl").value.trim();
+
+  if (!aspUrl) {
+    setStatus("請先貼上 Fact_ASP_Monthly CSV URL。");
     return;
   }
 
   try {
-    setStatus("Loading ASP monthly data...");
-    const csv = await fetchText(url);
-    aspMonthly = parseCSV(csv);
-    aspMonthly = cleanAspMonthly(aspMonthly);
+    setStatus("Loading Fact_ASP_Monthly...");
+    const csv = await fetchText(aspUrl);
+    aspMonthly = cleanAspMonthly(parseCSV(csv));
     renderAspDashboard();
 
-    if (ANTIBIOGRAM_CSV_URL) {
-      setStatus("Loading antibiogram...");
-      const agCsv = await fetchText(ANTIBIOGRAM_CSV_URL);
+    if (antibiogramUrl) {
+      setStatus("Loading Fact_Antibiogram...");
+      const agCsv = await fetchText(antibiogramUrl);
       antibiogram = parseCSV(agCsv);
       renderAntibiogramTable(antibiogram.slice(0, 100));
+      document.getElementById("antibiogramStatus").innerText =
+        `Fact_Antibiogram loaded: ${antibiogram.length} rows.`;
+    } else {
+      document.getElementById("antibiogramStatus").innerText =
+        "未提供 Fact_Antibiogram CSV URL，因此未載入 antibiogram。";
     }
 
     setStatus("Data loaded.");
   } catch (err) {
     console.error(err);
-    setStatus("Load failed. Check CSV URL or sharing setting.");
+    setStatus("Load failed. 請檢查 CSV URL、發布設定或欄位名稱。");
   }
 }
 
@@ -135,6 +133,7 @@ function cleanAspMonthly(rows) {
     const imipenem = toNum(r.Imipenem_DDD);
     const ertapenem = toNum(r.Ertapenem_DDD);
     const doripenem = toNum(r.Doripenem_DDD);
+
     return {
       ...r,
       YYYYMM: r.YYYYMM || r.Date || "",
@@ -146,9 +145,10 @@ function cleanAspMonthly(rows) {
       Imipenem_DDD_num: imipenem,
       Ertapenem_DDD_num: ertapenem,
       Doripenem_DDD_num: doripenem,
-      Total_Carbapenem_DDD_num: [meropenem, imipenem, ertapenem, doripenem]
-        .filter(x => x !== null)
-        .reduce((a, b) => a + b, 0)
+      Total_Carbapenem_DDD_num:
+        [meropenem, imipenem, ertapenem, doripenem]
+          .filter(x => x !== null)
+          .reduce((a, b) => a + b, 0)
     };
   }).filter(r => r.YYYYMM);
 }
@@ -161,7 +161,8 @@ function renderAspDashboard() {
   document.getElementById("kpiCRKP").innerText = fmtPct(latest.CRKP_Rate_num);
   document.getElementById("kpiCRAB").innerText = fmtPct(latest.CRAB_Rate_num);
   document.getElementById("kpiMRSA").innerText = fmtPct(latest.MRSA_Rate_num);
-  document.getElementById("kpiCarbapenem").innerText = fmtNum(latest.Total_Carbapenem_DDD_num);
+  document.getElementById("kpiCarbapenem").innerText =
+    fmtNum(latest.Total_Carbapenem_DDD_num);
 
   const labels = aspMonthly.map(r => r.YYYYMM);
 
@@ -185,17 +186,15 @@ function renderAspDashboard() {
 
 function renderLineChart(canvasId, labels, datasets, yTitle) {
   if (charts[canvasId]) charts[canvasId].destroy();
-  const ctx = document.getElementById(canvasId);
-  charts[canvasId] = new Chart(ctx, {
+
+  charts[canvasId] = new Chart(document.getElementById(canvasId), {
     type: "line",
     data: { labels, datasets },
     options: {
       responsive: true,
       interaction: { mode: "index", intersect: false },
       plugins: { legend: { position: "bottom" } },
-      scales: {
-        y: { title: { display: true, text: yTitle } }
-      }
+      scales: { y: { title: { display: true, text: yTitle } } }
     }
   });
 }
@@ -206,7 +205,7 @@ function renderScatterChart() {
 
   const points = aspMonthly
     .filter(r => r.Meropenem_DDD_num !== null && r.CRKP_Rate_num !== null)
-    .map(r => ({ x: r.Meropenem_DDD_num, y: r.CRKP_Rate_num, label: r.YYYYMM }));
+    .map(r => ({ x: r.Meropenem_DDD_num, y: r.CRKP_Rate_num }));
 
   charts[canvasId] = new Chart(document.getElementById(canvasId), {
     type: "scatter",
@@ -241,6 +240,7 @@ function renderAiBrief() {
   const carbDelta = changeFromPrevious("Total_Carbapenem_DDD_num");
 
   const riskNotes = [];
+
   if (latest.CRKP_Rate_num !== null && latest.CRKP_Rate_num >= 20) {
     riskNotes.push("CRKP rate ≥ 20%，建議檢視 carbapenem empirical use 與 de-escalation 流程。");
   }
@@ -248,13 +248,14 @@ function renderAiBrief() {
     riskNotes.push("CRAB rate 偏高，建議追蹤 ICU / 呼吸照護單位群聚與感染管制策略。");
   }
   if (latest.MRSA_Rate_num !== null && latest.MRSA_Rate_num >= 50) {
-    riskNotes.push("MRSA rate 偏高，vancomycin / teicoplanin 使用壓力與採檢來源需同步檢視。");
+    riskNotes.push("MRSA rate 偏高，建議同步檢視 vancomycin / teicoplanin 使用壓力。");
   }
   if (carbDelta !== null && carbDelta > 15) {
     riskNotes.push("Carbapenem DDD 較前期增加 >15%，建議列入 ASP morning review。");
   }
 
-  const brief = `ASP Stewardship Brief
+  document.getElementById("aiBrief").innerText =
+`ASP Stewardship Brief
 
 Latest period: ${latest.YYYYMM}
 
@@ -270,32 +271,43 @@ ${riskNotes.length ? riskNotes.map(x => "- " + x).join("\n") : "- No major rule-
 
 Note:
 This is a rule-based preliminary summary. It should support, not replace, ASP pharmacist review.`;
-
-  document.getElementById("aiBrief").innerText = brief;
 }
 
 function renderAntibiogramTable(rows) {
   const tbody = document.querySelector("#antibiogramTable tbody");
   tbody.innerHTML = "";
+
   rows.forEach(r => {
     const tr = document.createElement("tr");
-    ["Year","Period","Organism","Drug","IsolateCount","SusceptibilityPercent","Location"].forEach(k => {
-      const td = document.createElement("td");
-      td.innerText = r[k] || "";
-      tr.appendChild(td);
-    });
+    ["Year", "Period", "Organism", "Drug", "IsolateCount", "SusceptibilityPercent", "Location"]
+      .forEach(k => {
+        const td = document.createElement("td");
+        td.innerText = r[k] || "";
+        tr.appendChild(td);
+      });
     tbody.appendChild(tr);
   });
 }
 
 function filterAntibiogram() {
   const q = document.getElementById("organismSearch").value.trim().toLowerCase();
+
+  if (!antibiogram.length) {
+    document.getElementById("antibiogramStatus").innerText =
+      "Fact_Antibiogram 尚未載入。請貼上 CSV URL 後按 Load Dashboard。";
+    return;
+  }
+
   if (!q) {
     renderAntibiogramTable(antibiogram.slice(0, 100));
     return;
   }
+
   const rows = antibiogram
     .filter(r => String(r.Organism || "").toLowerCase().includes(q))
     .slice(0, 200);
+
   renderAntibiogramTable(rows);
+  document.getElementById("antibiogramStatus").innerText =
+    `Search result: ${rows.length} rows shown.`;
 }

@@ -14,16 +14,24 @@
         <h1>AI ASP Command Center</h1>
         <p>Local antibiogram、MDRO trend、antibiotic DDD 與 AI stewardship insight。</p>
       </div>
-      <div class="status" id="dataStatus">Loading data...</div>
+      <div class="status" id="dataStatus">Ready</div>
     </header>
 
-    <section class="controls">
+    <section class="controls two-rows">
       <label>
-        Google Sheet CSV URL
-        <input id="sheetUrl" type="text" placeholder="Paste published CSV URL here" />
+        Fact_ASP_Monthly CSV URL
+        <input id="aspCsvUrl" type="text" placeholder="Paste Fact_ASP_Monthly published CSV URL here" />
       </label>
-      <button onclick="loadDashboard()">Load Dashboard</button>
-      <button onclick="saveSheetUrl()">Save URL</button>
+
+      <label>
+        Fact_Antibiogram CSV URL
+        <input id="antibiogramCsvUrl" type="text" placeholder="Paste Fact_Antibiogram published CSV URL here" />
+      </label>
+
+      <div class="button-row">
+        <button onclick="loadDashboard()">Load Dashboard</button>
+        <button onclick="saveUrls()">Save URLs</button>
+      </div>
     </section>
 
     <section class="kpi-grid">
@@ -60,15 +68,13 @@
     <section class="grid-2">
       <article class="panel">
         <h2>Correlation Explorer</h2>
-        <p class="hint">粗略視覺化：Meropenem DDD vs CRKP rate。</p>
+        <p class="hint">Meropenem DDD vs CRKP rate。</p>
         <canvas id="correlationChart"></canvas>
       </article>
 
       <article class="panel">
         <h2>AI Stewardship Brief</h2>
-        <div id="aiBrief" class="brief">
-          尚未載入資料。
-        </div>
+        <div id="aiBrief" class="brief">尚未載入資料。</div>
       </article>
     </section>
 
@@ -78,6 +84,7 @@
         <input id="organismSearch" placeholder="例如：Escherichia coli / Klebsiella pneumoniae" />
         <button onclick="filterAntibiogram()">Search</button>
       </div>
+      <div class="small" id="antibiogramStatus">Fact_Antibiogram 尚未載入。</div>
       <div class="table-wrap">
         <table id="antibiogramTable">
           <thead>

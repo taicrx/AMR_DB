@@ -1,41 +1,15 @@
-# AI ASP Command Center MVP
+# AI ASP Command Center v2
 
-This is a static GitHub Pages dashboard designed for embedding into Google Sites.
+This version supports two CSV inputs on the page:
 
-## Data source
+1. Fact_ASP_Monthly CSV URL
+2. Fact_Antibiogram CSV URL
 
-Use Google Sheet tabs published as CSV.
+Upload all files to GitHub Pages and embed the GitHub Pages URL into Google Sites.
 
-Recommended Google Sheet tabs:
+Required headers for Fact_ASP_Monthly:
+YYYYMM, CRKP_Rate, CRAB_Rate, MRSA_Rate, VRE_Rate,
+Meropenem_DDD, Imipenem_DDD, Ertapenem_DDD, Doripenem_DDD
 
-1. `Fact_ASP_Monthly`
-2. `Fact_Antibiogram`
-
-## How to publish Google Sheet as CSV
-
-Google Sheet → File → Share → Publish to web → choose sheet tab → CSV.
-
-Paste the `Fact_ASP_Monthly` CSV URL into the dashboard input box.
-
-For `Fact_Antibiogram`, edit `app.js`:
-
-```js
-const ANTIBIOGRAM_CSV_URL = "your-published-csv-url";
-```
-
-## Deploy to GitHub Pages
-
-1. Create a GitHub repository.
-2. Upload `index.html`, `style.css`, `app.js`.
-3. Go to Settings → Pages.
-4. Source: Deploy from branch.
-5. Branch: main / root.
-6. Open the GitHub Pages URL.
-
-## Embed in Google Sites
-
-Google Sites → Insert → Embed → paste GitHub Pages URL.
-
-## Privacy
-
-Use only aggregated data. Do not upload or store patient identifiers, MRN, names, SOAP notes, or raw culture reports.
+Required headers for Fact_Antibiogram:
+Year, Period, Organism, Drug, IsolateCount, SusceptibilityPercent, Location
