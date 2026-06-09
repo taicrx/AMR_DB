@@ -13,8 +13,10 @@ For MVP, the first URL should be Fact_ASP_Monthly.
 For antibiogram, define ANTIBIOGRAM_CSV_URL below.
 */
 
-const DEFAULT_ASP_CSV_URL = "";
-const ANTIBIOGRAM_CSV_URL = ""; // Optional: paste Fact_Antibiogram published CSV URL here.
+const DEFAULT_ASP_CSV_URL =
+"https://docs.google.com/spreadsheets/d/e/2PACX-1vQM8WMnPop68JT32GelxEr2Nf77TcQKXAZvATTlsj59kKxzQFIfkRzXB7UwgpE5pXYElaWIDkDyYHsZ/pub?gid=257837179&single=true&output=csv";
+const ANTIBIOGRAM_CSV_URL =
+"https://docs.google.com/spreadsheets/d/e/2PACX-1vQM8WMnPop68JT32GelxEr2Nf77TcQKXAZvATTlsj59kKxzQFIfkRzXB7UwgpE5pXYElaWIDkDyYHsZ/pub?gid=548638764&single=true&output=csv";
 
 document.addEventListener("DOMContentLoaded", () => {
   const saved = localStorage.getItem("ASP_CSV_URL") || DEFAULT_ASP_CSV_URL;
