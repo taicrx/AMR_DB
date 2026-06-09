@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI ASP Command Center</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <main class="container">
+    <header class="hero">
+      <div>
+        <h1>AI ASP Command Center</h1>
+        <p>Local antibiogram、MDRO trend、antibiotic DDD 與 AI stewardship insight。</p>
+      </div>
+      <div class="status" id="dataStatus">Loading data...</div>
+    </header>
+
+    <section class="controls">
+      <label>
+        Google Sheet CSV URL
+        <input id="sheetUrl" type="text" placeholder="Paste published CSV URL here" />
+      </label>
+      <button onclick="loadDashboard()">Load Dashboard</button>
+      <button onclick="saveSheetUrl()">Save URL</button>
+    </section>
+
+    <section class="kpi-grid">
+      <article class="kpi-card">
+        <div class="kpi-title">Latest CRKP Rate</div>
+        <div class="kpi-value" id="kpiCRKP">-</div>
+      </article>
+      <article class="kpi-card">
+        <div class="kpi-title">Latest CRAB Rate</div>
+        <div class="kpi-value" id="kpiCRAB">-</div>
+      </article>
+      <article class="kpi-card">
+        <div class="kpi-title">Latest MRSA Rate</div>
+        <div class="kpi-value" id="kpiMRSA">-</div>
+      </article>
+      <article class="kpi-card">
+        <div class="kpi-title">Latest Carbapenem DDD</div>
+        <div class="kpi-value" id="kpiCarbapenem">-</div>
+      </article>
+    </section>
+
+    <section class="grid-2">
+      <article class="panel">
+        <h2>MDRO Trend</h2>
+        <canvas id="mdroChart"></canvas>
+      </article>
+
+      <article class="panel">
+        <h2>Carbapenem DDD Trend</h2>
+        <canvas id="carbapenemChart"></canvas>
+      </article>
+    </section>
+
+    <section class="grid-2">
+      <article class="panel">
+        <h2>Correlation Explorer</h2>
+        <p class="hint">粗略視覺化：Meropenem DDD vs CRKP rate。</p>
+        <canvas id="correlationChart"></canvas>
+      </article>
+
+      <article class="panel">
+        <h2>AI Stewardship Brief</h2>
+        <div id="aiBrief" class="brief">
+          尚未載入資料。
+        </div>
+      </article>
+    </section>
+
+    <section class="panel">
+      <h2>Local Antibiogram Lookup</h2>
+      <div class="lookup-row">
+        <input id="organismSearch" placeholder="例如：Escherichia coli / Klebsiella pneumoniae" />
+        <button onclick="filterAntibiogram()">Search</button>
+      </div>
+      <div class="table-wrap">
+        <table id="antibiogramTable">
+          <thead>
+            <tr>
+              <th>Year</th>
+              <th>Period</th>
+              <th>Organism</th>
+              <th>Drug</th>
+              <th>IsolateCount</th>
+              <th>S%</th>
+              <th>Location</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <footer>
+      本工具僅使用彙總資料，不應輸入姓名、病歷號、完整 SOAP 或任何可識別病人資料。
+    </footer>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
